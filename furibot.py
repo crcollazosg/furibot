@@ -23,7 +23,7 @@ DEBUG = 0
 #mar_path = 'marica.txt'
 #work_path = 'trabajar.txt'
 #ext_path = 'extorsion.txt'
-log_path = '/home/alarm/bin/furibot/furilog.log'
+log_path = 'my/log/path.log'
 
 # Phrases
 #  0 - Doctrina: "Castrochavismo"
