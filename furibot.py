@@ -1,44 +1,83 @@
 #!/usr/bin/python3
 """
 Generador automático de sandeces políticas
-No se asume ninguna responsabilidad por el uso de este programa
-fuera de su 
+No se asume ninguna responsabilidad por el uso de este programa 
 """
 import random
 import tweepy
 import time
+import os
 from secrets import *
 
+# SET TO 0 FOR NORMAL OPERATION
+# SET TO 1 FOR DEBUG (TURNS TWEETING OFF)
+DEBUG = 0
+
 # Files
-names_path = 'apellidos.txt'
-ideology_path = 'ideologias.txt'
-gender_path = 'genero.txt'
-country_path = 'paises.txt'
-communication_path = 'comunicaciones.txt'
-face_path = 'cara.txt'
-mar_path = 'marica.txt'
-log_path = 'furilog.log'
+#names_path = 'apellidos.txt'
+#ideology_path = 'ideologias.txt'
+#gender_path = 'genero.txt'
+#country_path = 'paises.txt'
+#communication_path = 'comunicaciones.txt'
+#face_path = 'cara.txt'
+#mar_path = 'marica.txt'
+#work_path = 'trabajar.txt'
+#ext_path = 'extorsion.txt'
+log_path = '/home/alarm/bin/furibot/furilog.log'
 
 # Phrases
-# 0 - Doctrina: "Castrochavismo"
-# 1 - Rima con Ideología: "Radiografía"
-# 2 - Rima con Género: "stéreo" 
-# 3 - Doctrinario: "Castrochavista"
-# 4 - País: "Venezuela"
-# 5 - Rima con comunicaciones: "Consignaciones"
-# 6 - "cara"
-# 7 - "marica"
+#  0 - Doctrina: "Castrochavismo"
+#  1 - Doctrinario: "Castrochavista"
+#  2 - Rima con Ideología: "Radiografía"
+#  3 - Rima con Género: "stéreo" 
+#  4 - País: "Venezuela"
+#  5 - Rima con comunicaciones: "Consignaciones"
+#  6 - "cara"
+#  7 - "marica"
+#  8 - Rima con trabajar: "nadar"
+#  9 - Rima con extorsión (termina en 'sión'): comisión
+# 10 - Rima con pregunta
+# 11 - rima con periodista
+# 12 - lugares (con artículo): "la cárcel"
+# 13 - termina en "ismo"
+# 14 - termina en "ada": llamada
+# 15 - termina en "ando": escuchando
+# 16 - hijuep***s
+# 17 - comunicación, para reemplazar paz
+
+order_single = [
+        'ideologias',
+        'genero',
+        'paises',
+        'comunicaciones',
+        'cara',
+        'mk',
+        'trabajar',
+        'extorsion',
+        'pregunta',
+        'periodista',
+        'lugares',
+        'terr',
+	'llamada',
+	'escuchando',
+	'hps',
+	'comunicacion'
+        ]
 
 phrase_base = [
-        '¡El {0} se quiere tomar el poder! No a la {1} de género.',
-        '¡El {0} se quiere tomar el poder!',
-        '¡No a la {1} de género!',
-        'Nos quieren implantar la {1} de género.',
-        '{0} quiere introducir la {1} de género.',
-        'Gobierno {3} nos volverá como {4}.',
-        'Todo es un montaje, una persecución {3}.',
-        'Hacen daño los compañeros que no cuidan las {5}.',
-        '¡Si lo veo le doy en la {6}, {7}!'
+        #'¡El {x[0]} quiere llegar al poder! No a la {x[2]} de género.',
+        '¡El {x[0]} se quiere tomar el poder!',
+        '{x[1]}s quieren implantar la {x[2]} de género.',
+        'No a la {x[2]} de género.',
+        'Gobierno {x[1]} nos volverá como {x[4]}.',
+        'Hacen daño los compañeros que no cuidan las {x[5]}.',
+        '¡Y si lo veo le voy a dar en la {x[6]}, {x[7]}!',
+        'Entro a un Carulla y otro compatriota me aborda y me dice que para poder {x[8]} tiene que pagar {x[9]}',
+        'Siguiente {x[10]}, amigo {x[11]}',
+        'Se escudan en su condición de {x[11]}s para ser permisivos cómplices del {x[13]}',
+        'Les pido a los {x[11]}s que nos han apoyado, que mientras no estén en {x[12]}, voten los proyectos del Gobierno',
+	'Esta {x[14]} la están {x[15]} esos {x[16]}.',
+	'{x[17]} sí, pero no así'
         ]
 
 trans_table = ''.maketrans('áéíóú', 'aeiou', ' ')
@@ -49,76 +88,76 @@ def limpiar(apellido):
 
 def doctrina(a, b):
     if len(b)<=4:
-        return limpiar(a) + limpiar(b) + "ismo"
+        return limpiar(a) + limpiar(b) + 'ismo'
     if b[-1] in 'aeiou':
-        return limpiar(a) + limpiar(b)[:-1] + "ismo"
-    if b[-2:] in ['es', 'ez']:
-        return limpiar(a) + limpiar(b)[:-2] + "ismo"
-    return limpiar(a) + limpiar(b) + "ismo"
+        return limpiar(a) + limpiar(b)[:-1] + 'ismo'
+    if b[-2:] in ['es', 'ez', 'os']:
+        return limpiar(a) + limpiar(b)[:-2] + 'ismo'
+    return limpiar(a) + limpiar(b) + 'ismo'
 
 def doctrinario(a, b):
     if len(b)<=4:
-        return limpiar(a) + limpiar(b) + "ista"
+        return limpiar(a) + limpiar(b) + 'ista'
     if b[-1] in 'aeiou':
-        return limpiar(a) + limpiar(b)[:-1] + "ista"
-    if b[-2:] in ['es', 'ez']:
-        return limpiar(a) + limpiar(b)[:-2] + "ista"
-    return limpiar(a) + limpiar(b) + "ista"
+        return limpiar(a) + limpiar(b)[:-1] + 'ista'
+    if b[-2:] in ['es', 'ez', 'os']:
+        return limpiar(a) + limpiar(b)[:-2] + 'ista'
+    return limpiar(a) + limpiar(b) + 'ista'
+
+def get_dictionaries():
+    dicts = dict()
+    for root, dirs, files in os.walk('/home/alarm/bin/furibot/dict'):
+        for file in files:
+            with open(os.path.join(root, file), 'r') as f:
+                dicts[file] = f.read().splitlines()
+                f.close()
+    return dicts
 
 #def tweet_this(text):
 #    print(text)
 
 if __name__=="__main__":
     # Load dictionaries
-    with open(names_path, 'r') as names_file:
-        names = names_file.read().splitlines()
-    with open(ideology_path, 'r') as ideology_file:
-        ideologies = ideology_file.read().splitlines()
-    with open(gender_path, 'r') as gender_file:
-        genders = gender_file.read().splitlines()
-    with open(country_path, 'r') as country_file:
-        countries = country_file.read().splitlines()
-    with open(communication_path, 'r') as communication_file:
-        communications = communication_file.read().splitlines()
-    with open(face_path, 'r') as face_file:
-        faces = face_file.read().splitlines()
-    with open(mar_path, 'r') as mar_file:
-        mars = mar_file.read().splitlines()
+    dicts = get_dictionaries()
 
     ## API set up
-    auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
-    auth.set_access_token(ACCESS_KEY, ACCESS_SECRET)
-    api = tweepy.API(auth)
+    if not DEBUG:
+        auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
+        auth.set_access_token(ACCESS_KEY, ACCESS_SECRET)
+        api = tweepy.API(auth)
 
     # Open log file
-    my_log = open(log_path, 'w')
+    my_log = open(log_path, 'a')
 
-    while True:
-        # Randomize all the things!
-        rand_base = random.choice(phrase_base)
-        rand_names = [random.choice(names), random.choice(names)]
-        rand_doctrina = doctrina(rand_names[0], rand_names[1])
-        rand_doctrinario = doctrinario(rand_names[0], rand_names[1])
-        rand_country = random.choice(countries)
-        rand_ideology = random.choice(ideologies)
-        rand_gender = random.choice(genders)
-        rand_communication = random.choice(communications)
-        rand_face = random.choice(faces)
-        rand_mar = random.choice(mars)
+    # while True:
+    # Randomize all the things!
+    rand_base = random.choice(phrase_base)
+    rand_names = [random.choice(dicts['apellidos']),
+            random.choice(dicts['apellidos'])]
+    rand_params = [
+            doctrina(rand_names[0], rand_names[1]),
+            doctrinario(rand_names[0], rand_names[1])
+            ]
+    for item in order_single:
+        rand_params.append(random.choice(dicts[item]))
     
-        # Tweet it!
-        tweet_str = rand_base.format(rand_doctrina,
-            rand_ideology,
-            rand_gender,
-            rand_doctrinario,
-            rand_country,
-            rand_communication,
-            rand_face,
-            rand_mar)
+    # Prepare
+    tweet_str = rand_base.format(x=rand_params)
+
+    # Aim
+    # if len(tweet_str) > 140: continue
+
+    # Fire!, I mean, Tweet!
+    if DEBUG:
+        print(len(tweet_str), '-', tweet_str)
+        # time.sleep(5)
+        # continue
+        exit()
+    try:
         api.update_status(tweet_str)
         my_log.write(tweet_str + '\n')
-        #print(tweet_str)
-        # Debug version
-        #print(len(tweet_str), '-', tweet_str) 
-        # Rest for 15 minutes and repeat
-        time.sleep(900)
+        # time.sleep(1800)
+    except TweepError:
+        print('ERROR -' + str(TweepError.message[0]['code']) + '-' + TweepError.message[0]['message'])
+        my_log.write('ERROR -' + str(TweepError.message[0]['code']) + tweet_str + '\n')
+        # time.sleep(300)
