@@ -1,2 +1,2 @@
-# furibot
-furibot
+# My Twitterbot
+twitterbot
